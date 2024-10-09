@@ -130,7 +130,6 @@ class CompanyRawMaterialsController extends Controller
             $request->all(),
             [
                 'company_name' => 'required',
-                'total_pallet' => 'required|numeric',
                 'bag_per_pallet' => 'required|numeric',
                 'total_bag' => 'required|numeric',
                 'weight_per_bag' => 'required|numeric',
@@ -138,10 +137,8 @@ class CompanyRawMaterialsController extends Controller
                 'supplier_name' => 'required',
                 'purchase_order_no' => 'required',
                 'sales_order_no' => 'required',
-                'description_of_goods' => 'required',
                 'grade' => 'required',
                 'qty' => 'required',
-                'weight_per_pcs' => 'required',
                 'payment_terms' => 'required',
                 'invoice_date' => 'required',
                 'status' => 'required',
