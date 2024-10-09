@@ -78,6 +78,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/pi-reports-domestic-get',[PiReportDomesticController::class,'show']);
 
     Route::get('/company-raw-material-calculation',[CompanyRawMaterialsController::class,'calculation'])->name('company-raw-material.calculation');
+    Route::post('/fetch_grade_by_company_name',[CompanyRawMaterialsController::class,'fetchGradeByCompanyName'])->name('company_raw_material.fetchGradeByCompanyName');
     Route::get('/finish-goods-calculation',[CompanyRawMaterialsController::class,'calculation'])->name('finish-goods.calculation');
 
 });

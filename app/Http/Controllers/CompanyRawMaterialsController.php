@@ -198,6 +198,24 @@ class CompanyRawMaterialsController extends Controller
         ], 200);
     }
 
+
+    /**
+     * Fetch Grade By Company Name
+     *
+     * Fetch the grade of a specified company name.
+     * This endpoint allows you to fetch the grade of a company by providing its name.
+     *
+     * @group Company Raw Materials
+     */
+    public function fetchGradeByCompanyName(Request $request)
+    {
+        $companyRawMaterials = CompanyRawMaterial::where('company_name', $request->company_name)->select('grade')->first();
+        return response()->json([
+            'status' => 'success',
+            'grade' => $companyRawMaterials ? $companyRawMaterials->grade : 'No grade found'
+        ], 200);
+    }
+
     /**
      * Update Raw Material
      *
