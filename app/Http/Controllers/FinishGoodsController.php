@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\FinishGoods;
+use App\Models\CompanyRawMaterial;
+use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -192,6 +194,8 @@ class FinishGoodsController extends Controller
             'actual_qty_consumed' => $request->actual_qty_consumed ?? null,
         ]);
 
+        $size = Size::where(['id' => $request->size_id])->select('hsn_code', 'micron')->first();
+        $finishGood->size = $size;
         return response()->json([
             'status' => 'success',
             'message' => 'Finish Goods is saved',
