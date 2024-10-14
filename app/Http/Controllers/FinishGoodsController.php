@@ -169,8 +169,7 @@ class FinishGoodsController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
-        FinishGoods::create([
+        $finishGood = FinishGoods::create([
             'product_id' => $request->product_id,
             'size_id' => $request->size_id,
             'kg_per_roll' => $request->kg_per_roll ?? null,
@@ -180,7 +179,8 @@ class FinishGoodsController extends Controller
             'pallet_number' => $request->pallet_number ?? null,
             'details' => $request->details ?? null,
             'boxes' => $request->boxes ?? null,
-            'production_date' => !empty($request->production_date)? Carbon::parse($request->production_date)->toDateString() : null,
+            'dynamic_fields' => $request->dynamic_fields ? json_encode($request->dynamic_fields) : null,
+            'production_date' => !empty($request->production_date) ? Carbon::parse($request->production_date)->toDateString() : null,
             'good_details' => $request->good_details ?? null,
             'company' => $request->company ?? null,
             'description_of_goods' => $request->description_of_goods ?? null,
@@ -194,7 +194,8 @@ class FinishGoodsController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Finish Goods is saved'
+            'message' => 'Finish Goods is saved',
+            'data' => $finishGood
         ], 200);
     }
 
@@ -421,7 +422,7 @@ class FinishGoodsController extends Controller
             'product:id,product_name',
             'size:id,size_in_cm,size_in_mm,micron'
         ])->where('created_at', 'LIKE', '%' . Carbon::parse($request->date_filter)->toDateString() . '%')
-            ->where(['created_by'=>auth()->user()->id])
+            ->where(['created_by' => auth()->user()->id])
             ->select('id', 'product_id', 'size_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes')
             ->get()->each(function ($finishGood) use (&$micronCount, &$kgPerRollCount, &$rollQuantityCount, &$totalKgCount, &$boxesCount) {
                 $micronCount = $micronCount + ($finishGood->size->micron ?? 0);
