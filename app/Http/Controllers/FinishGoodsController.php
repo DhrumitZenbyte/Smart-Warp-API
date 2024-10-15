@@ -8,6 +8,7 @@ use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Exception;
 
 class FinishGoodsController extends Controller
 {
@@ -169,6 +170,41 @@ class FinishGoodsController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+
+        $dynamic_fields = json_decode(json_encode($request->dynamic_fields));
+        try {
+            foreach ($dynamic_fields as $key => $value) {
+                if (in_array($key, ['qty_issued', 'qty_returned'])) {
+                    foreach ($value as $field) {
+                        $companyRawMaterials = CompanyRawMaterial::where('grade', $field->grad)->where('company_name', $request->company)
+                            ->first();
+                        if ($companyRawMaterials) {
+                            if ($key == 'qty_issued') {
+                                $total_pallet = $companyRawMaterials->total_pallet - $field->pallets;
+                                $total_weight = $companyRawMaterials->total_weight - $field->weights;
+                                $total_bag = $companyRawMaterials->total_bag - $field->bags;
+                                if ($total_pallet < 0 || $total_weight < 0 || $total_bag < 0) {
+                                    return response()->json(['message' => 'Insufficient raw material for grade ' . $field->grad], 400);
+                                }
+                                $companyRawMaterials->total_pallet = $total_pallet;
+                                $companyRawMaterials->total_weight = $total_weight;
+                                $companyRawMaterials->total_bag = $total_bag;
+                            } else {
+                                $companyRawMaterials->total_pallet += $field->pallets;
+                                $companyRawMaterials->total_weight += $field->weights;
+                                $companyRawMaterials->total_bag += $field->bags;
+                            }
+                            $companyRawMaterials->save();
+                        } else {
+                            return response()->json(['message' => 'No raw material found for grade ' . $field->grad . ''], 400);
+                        }
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+
         $finishGood = FinishGoods::create([
             'product_id' => $request->product_id,
             'size' => $request->size,
