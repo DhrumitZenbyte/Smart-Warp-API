@@ -58,11 +58,11 @@ class FinishGoodsController extends Controller
      */
     public function index()
     {
-        $finishGoods = FinishGoods::where(['created_by'=>auth()->user()->id])->first()->with([
+        $finishGoods = FinishGoods::where(['created_by' => auth()->user()->id])->first()->with([
             'product:id,product_name',
             'size:id,size_in_cm,size_in_mm,micron'
         ])
-            ->select('id', 'product_id', 'size_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes','production_date','good_details','company','description_of_goods','qty_in_storage_start','qty_issued','qty_in_storage_end','qty_returned','wastage','actual_qty_consumed')
+            ->select('id', 'product_id', 'size_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes', 'production_date', 'good_details', 'company', 'description_of_goods', 'qty_in_storage_start', 'qty_issued', 'qty_in_storage_end', 'qty_returned', 'wastage', 'actual_qty_consumed')
             ->get()->toArray();
 
         return response()->json([
@@ -122,7 +122,6 @@ class FinishGoodsController extends Controller
             $request->all(),
             [
                 'product_id' => 'required',
-                'size_id' => 'required',
                 // 'kg_per_roll' => 'required|numeric',
                 // 'roll_quantity' => 'required|numeric',
                 // 'total_kg' => 'required|numeric',
@@ -147,7 +146,6 @@ class FinishGoodsController extends Controller
             ],
             [
                 'product_id' => 'Product',
-                'size_id' => 'Size',
                 // 'kg_per_roll' => 'Sqm Per Roll',
                 // 'roll_quantity' => 'Roll Quantity',
                 // 'total_kg' => 'Total Sqm',
@@ -173,7 +171,9 @@ class FinishGoodsController extends Controller
         }
         $finishGood = FinishGoods::create([
             'product_id' => $request->product_id,
-            'size_id' => $request->size_id,
+            'size' => $request->size,
+            'hsn_code' => $request->hsn_code,
+            'micron' => $request->micron,
             'kg_per_roll' => $request->kg_per_roll ?? null,
             'roll_quantity' => $request->roll_quantity ?? null,
             'total_kg' => $request->total_kg ?? null,
@@ -194,8 +194,6 @@ class FinishGoodsController extends Controller
             'actual_qty_consumed' => $request->actual_qty_consumed ?? null,
         ]);
 
-        $size = Size::where(['id' => $request->size_id])->select('hsn_code', 'micron')->first();
-        $finishGood->size = $size;
         return response()->json([
             'status' => 'success',
             'message' => 'Finish Goods is saved',
