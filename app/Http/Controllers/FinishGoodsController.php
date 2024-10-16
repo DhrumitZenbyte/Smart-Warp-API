@@ -25,7 +25,6 @@ class FinishGoodsController extends Controller
      *      {
      *          "id": "15fjl5-4f45t-5g456y-g5t",
      *          "product_id": "1g5l67-54yb6-8u567-65g",
-     *          "size_id": "1g5l67-54yb6-8u567-65g5",
      *          "kg_per_roll": 100,
      *          "roll_quantity": 10,
      *          "total_kg": 1000,
@@ -63,7 +62,7 @@ class FinishGoodsController extends Controller
             'product:id,product_name',
             'size:id,size_in_cm,size_in_mm,micron'
         ])
-            ->select('id', 'product_id', 'size_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes', 'production_date', 'good_details', 'company', 'description_of_goods', 'qty_in_storage_start', 'qty_issued', 'qty_in_storage_end', 'qty_returned', 'wastage', 'actual_qty_consumed')
+            ->select('id', 'product_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes', 'production_date', 'good_details', 'company', 'description_of_goods', 'qty_in_storage_start', 'qty_issued', 'qty_in_storage_end', 'qty_returned', 'wastage', 'actual_qty_consumed', 'dynamic_fields', 'size', 'hsn_code', 'micron')
             ->get()->toArray();
 
         return response()->json([
@@ -80,7 +79,6 @@ class FinishGoodsController extends Controller
      * @group Finish Goods
      *
      * @bodyParam product_id int required The ID of the product. Example: 15fjl5-4f45t-5g456y-g5t
-     * @bodyParam size_id int required The ID of the size. Example: 1g5l67-54yb6-8u567-65g5
      * @bodyParam kg_per_roll numeric required The kilograms per roll. Example: 100
      * @bodyParam roll_quantity numeric required The quantity of rolls. Example: 10
      * @bodyParam total_kg numeric required The total kilograms. Example: 1000
@@ -106,7 +104,6 @@ class FinishGoodsController extends Controller
      * @response 422 {
      *  "errors": {
      *      "product_id": ["Product is required"],
-     *      "size_id": ["Size is required"],
      *      "kg_per_roll": ["Kg Per Roll is required", "Kg Per Roll must be numeric"],
      *      "roll_quantity": ["Roll Quantity is required", "Roll Quantity must be numeric"],
      *      "total_kg": ["Total Kg is required", "Total Kg must be numeric"],
@@ -247,7 +244,6 @@ class FinishGoodsController extends Controller
      * @urlParam id int required The ID of the finish good. Example: 15fjl5-4f45t-5g456y-g5t
      *
      * @bodyParam product_id int required The ID of the product. Example: 15fjl5-4f45t-5g456y-g5t
-     * @bodyParam size_id int required The ID of the size. Example: 1g5l67-54yb6-8u567-65g5
      * @bodyParam kg_per_roll numeric required The square meters per roll. Example: 100
      * @bodyParam roll_quantity numeric required The quantity of rolls. Example: 10
      * @bodyParam total_kg numeric required The total square meters. Example: 1000
@@ -273,7 +269,6 @@ class FinishGoodsController extends Controller
      * @response 422 {
      *  "errors": {
      *      "product_id": ["Product is required"],
-     *      "size_id": ["Size is required"],
      *      "kg_per_roll": ["Sqm Per Roll is required", "Sqm Per Roll must be numeric"],
      *      "roll_quantity": ["Roll Quantity is required", "Roll Quantity must be numeric"],
      *      "total_kg": ["Total Sqm is required", "Total Sqm must be numeric"],
@@ -290,7 +285,6 @@ class FinishGoodsController extends Controller
             $request->all(),
             [
                 'product_id' => 'required',
-                'size_id' => 'required',
                 // 'kg_per_roll' => 'required|numeric',
                 // 'roll_quantity' => 'required|numeric',
                 // 'total_kg' => 'required|numeric',
@@ -315,7 +309,6 @@ class FinishGoodsController extends Controller
             ],
             [
                 'product_id' => 'Product',
-                'size_id' => 'Size',
                 // 'kg_per_roll' => 'Sqm Per Roll',
                 // 'roll_quantity' => 'Roll Quantity',
                 // 'total_kg' => 'Total Sqm',
@@ -344,7 +337,6 @@ class FinishGoodsController extends Controller
 
         $finishGood->update([
             'product_id' => $request->product_id,
-            'size_id' => $request->size_id,
             'kg_per_roll' => $request->kg_per_roll ?? null,
             'roll_quantity' => $request->roll_quantity ?? null,
             'total_kg' => $request->total_kg ?? null,
@@ -422,7 +414,6 @@ class FinishGoodsController extends Controller
      *      {
      *          "id": 1,
      *          "product_id": 1dvm4i-4fh48-34jf84-4jci4,
-     *          "size_id": 5j5m4i-4fh48-34jf84-4jci4,
      *          "kg_per_roll": 100,
      *          "roll_quantity": 10,
      *          "total_kg": 1000,
@@ -461,7 +452,7 @@ class FinishGoodsController extends Controller
             'size:id,size_in_cm,size_in_mm,micron'
         ])->where('created_at', 'LIKE', '%' . Carbon::parse($request->date_filter)->toDateString() . '%')
             ->where(['created_by' => auth()->user()->id])
-            ->select('id', 'product_id', 'size_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes')
+            ->select('id', 'product_id', 'kg_per_roll', 'roll_quantity', 'total_kg', 'number_of_pallet', 'pallet_number', 'details', 'boxes')
             ->get()->each(function ($finishGood) use (&$micronCount, &$kgPerRollCount, &$rollQuantityCount, &$totalKgCount, &$boxesCount) {
                 $micronCount = $micronCount + ($finishGood->size->micron ?? 0);
                 $kgPerRollCount = $kgPerRollCount + ($finishGood->kg_per_roll ?? 0);
