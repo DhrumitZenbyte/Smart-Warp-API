@@ -72,6 +72,30 @@ class CompanyRawMaterialsController extends Controller
         ], 200);
     }
 
+    public function dashboard()
+    {
+        $companyRawMaterials = CompanyRawMaterial::selectRaw('company_name, grade, count(*) as total_count, sum(total_pallet) as total_pallet, sum(total_bag) as total_bag, sum(total_weight) as total_weight')
+            ->groupBy('company_name', 'grade')
+            ->get()
+            ->toArray();
+
+        $companyRawMaterialsCollection = collect($companyRawMaterials);
+
+        $totalPallet = $companyRawMaterialsCollection->sum('total_pallet');
+        $totalBag = $companyRawMaterialsCollection->sum('total_bag');
+        $totalWeight = $companyRawMaterialsCollection->sum('total_weight');
+
+        return response()->json([
+            'status' => 'success',
+            'dashboard' => [
+                'total_pallet' => $totalPallet,
+                'total_bag' => $totalBag,
+                'total_weight' => $totalWeight,
+                'company_raw_materials' => $companyRawMaterials,
+            ],
+        ], 200);
+    }
+
     /**
      * Create Raw Material
      *
@@ -274,7 +298,7 @@ class CompanyRawMaterialsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $companyRawMaterial = CompanyRawMaterial::where(['id'=>$id,'created_by'=>auth()->user()->id])->first();
+        $companyRawMaterial = CompanyRawMaterial::where(['id' => $id, 'created_by' => auth()->user()->id])->first();
 
         if (!$companyRawMaterial) {
             return response()->json(['message' => 'Raw Material not found'], 404);
@@ -375,7 +399,7 @@ class CompanyRawMaterialsController extends Controller
      */
     public function destroy($id)
     {
-        $companyRawMaterial = CompanyRawMaterial::where(['id'=>$id,'created_by'=>auth()->user()->id])->first();
+        $companyRawMaterial = CompanyRawMaterial::where(['id' => $id, 'created_by' => auth()->user()->id])->first();
 
         if (!$companyRawMaterial) {
             return response()->json(['message' => 'Raw Material not found'], 404);
@@ -431,10 +455,10 @@ class CompanyRawMaterialsController extends Controller
         $totalBagPerPalletCount = 0;
         $totalWeightPerBagCount = 0;
         $totalWeightCount = 0;
-        $companyRawMaterials = CompanyRawMaterial::where(['created_by'=>auth()->user()->id])->first()->select('id', 'company_name', 'total_pallet', 'bag_per_pallet', 'total_bag', 'weight_per_bag', 'total_weight')
-        ->where('created_at', 'LIKE', '%' . Carbon::parse($request->date_filter)->toDateString() . '%')
-        ->get()
-            ->each(function ($companyRawMaterial) use (&$totalBagPerPalletCount,&$totalPalletCount, &$totalBagCount, &$totalWeightPerBagCount, &$totalWeightCount) {
+        $companyRawMaterials = CompanyRawMaterial::where(['created_by' => auth()->user()->id])->first()->select('id', 'company_name', 'total_pallet', 'bag_per_pallet', 'total_bag', 'weight_per_bag', 'total_weight')
+            ->where('created_at', 'LIKE', '%' . Carbon::parse($request->date_filter)->toDateString() . '%')
+            ->get()
+            ->each(function ($companyRawMaterial) use (&$totalBagPerPalletCount, &$totalPalletCount, &$totalBagCount, &$totalWeightPerBagCount, &$totalWeightCount) {
                 $totalPalletCount = $totalPalletCount + $companyRawMaterial->total_pallet;
                 $totalBagCount = $totalBagCount + $companyRawMaterial->total_bag;
                 $totalBagPerPalletCount = $totalBagPerPalletCount + $companyRawMaterial->bag_per_pallet;
