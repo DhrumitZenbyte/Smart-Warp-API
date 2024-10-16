@@ -176,7 +176,7 @@ class FinishGoodsController extends Controller
             foreach ($dynamic_fields as $key => $value) {
                 if (in_array($key, ['qty_issued', 'qty_returned'])) {
                     foreach ($value as $field) {
-                        $companyRawMaterials = CompanyRawMaterial::where('grade', $field->grad)->where('company_name', $request->company)
+                        $companyRawMaterials = CompanyRawMaterial::where('grade', $field->grad)
                             ->first();
                         if ($companyRawMaterials) {
                             if ($key == 'qty_issued') {
