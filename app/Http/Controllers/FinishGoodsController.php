@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FinishGoods;
-use App\Models\CompanyRawMaterial;
+use App\Models\Dashboard;
 use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -173,7 +173,7 @@ class FinishGoodsController extends Controller
             foreach ($dynamic_fields as $key => $value) {
                 if (in_array($key, ['qty_issued', 'qty_returned'])) {
                     foreach ($value as $field) {
-                        $companyRawMaterials = CompanyRawMaterial::where('grade', $field->grad)
+                        $companyRawMaterials = Dashboard::where('grade', $field->grad)
                             ->first();
                         if ($companyRawMaterials) {
                             if ($key == 'qty_issued') {
