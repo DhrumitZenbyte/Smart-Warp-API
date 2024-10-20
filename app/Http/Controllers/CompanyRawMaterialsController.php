@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanyRawMaterial;
+use App\Models\Dashboard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -69,30 +70,6 @@ class CompanyRawMaterialsController extends Controller
         return response()->json([
             'status' => 'success',
             'company_raw_materials' => $companyRawMaterials,
-        ], 200);
-    }
-
-    public function dashboard()
-    {
-        $companyRawMaterials = CompanyRawMaterial::selectRaw('company_name, grade, count(*) as total_count, sum(total_pallet) as total_pallet, sum(total_bag) as total_bag, sum(total_weight) as total_weight')
-            ->groupBy('company_name', 'grade')
-            ->get()
-            ->toArray();
-
-        $companyRawMaterialsCollection = collect($companyRawMaterials);
-
-        $totalPallet = $companyRawMaterialsCollection->sum('total_pallet');
-        $totalBag = $companyRawMaterialsCollection->sum('total_bag');
-        $totalWeight = $companyRawMaterialsCollection->sum('total_weight');
-
-        return response()->json([
-            'status' => 'success',
-            'dashboard' => [
-                'total_pallet' => $totalPallet,
-                'total_bag' => $totalBag,
-                'total_weight' => $totalWeight,
-                'company_raw_materials' => $companyRawMaterials,
-            ],
         ], 200);
     }
 
@@ -216,6 +193,24 @@ class CompanyRawMaterialsController extends Controller
             'status' => $request->status,
             'received_date' => Carbon::parse($request->received_date)->toDateString(),
         ]);
+
+        $dashboard = Dashboard::where('grade', $request->grade)
+            ->where('company_name', $request->company_name)
+            ->first();
+
+        if ($dashboard) {
+            $dashboard->total_pallet = $dashboard->total_pallet + $request->total_pallet;
+            $dashboard->total_weight = $dashboard->total_weight + $request->total_weight;
+            $dashboard->total_bag = $dashboard->total_bag + $request->total_bag;
+        } else {
+            $dashboard = new Dashboard();
+            $dashboard->grade = $request->grade;
+            $dashboard->company_name = $request->company_name;
+            $dashboard->total_pallet = $request->total_pallet;
+            $dashboard->total_weight = $request->total_weight;
+            $dashboard->total_bag = $request->total_bag;
+        }
+        $dashboard->save();
         return response()->json([
             'status' => 'success',
             'message' => 'Company Raw Materials are stored'
